@@ -1,53 +1,91 @@
 const cadastroClientes = require('../cadastro_clientes');
+const repositoryClientes = require('../repository/cliente_repository.js');
 
-function listar(req, res) {
-    const listaClientes = cadastroClientes.listar();
+async function listar(req, res) {
+    const listaClientes = await repositoryClientes.listar();
     res.json(listaClientes);
 }
 
-function buscarPorId(req,res) {
+async function buscarPorId(req,res) {
     const id = req.params.id;
-    try{
-        const cliente = cadastroClientes.buscarPorId(id);
+    const cliente = await repositoryClientes.buscarPorId(id);
+    if(cliente){
         res.json(cliente);
-    } catch (err) {
-        res.status(err.numero).json(err);
     }
+    else {
+        res.status(404).json(
+            {
+                numero: 404,
+                msg: "Erro: Cliente nao encontrado."
+            }
+        );
+    }
+    
 }
 
-function inserir(req, res) {
+async function inserir(req, res) {
     const cliente = req.body;
-
-    try{
-        const clienteInserido = cadastroClientes.inserir(cliente);
+    if(cliente && cliente.matricula && cliente.nome && cliente.telefone) {
+        const clienteInserido = 
+            await repositoryClientes.inserir(cliente);
         res.status(201).json(clienteInserido);
     }
-    catch (err) {
-        res.status(err.numero).json(err);
+    else {
+        res.status(400).json(
+            {
+                numero: 400,
+                msg: "Erro: Os parametros de cliente estao invalidos"
+            }
+        );
     }
 }
 
-function atualizar(req,res) {
+async function atualizar(req,res) {
     const id = req.params.id;
     const cliente = req.body;
-    try{
-        const clienteAtualizado = cadastroClientes.atualizar(id,cliente);
-        res.json(clienteAtualizado);
+
+    if(cliente && cliente.matricula && cliente.nome && cliente.telefone)
+    {
+        const clienteAlterado = 
+            await repositoryClientes.atualizar(id,cliente);
+        if(clienteAlterado){
+            res.json(clienteAlterado);
+        }
+        else {
+            res.status(404).json(
+                {
+                    numero: 404,
+                    msg: "Erro: Cliente nao encontrado."
+                }
+            );
+        }        
     }
-    catch (err) {
-        res.status(err.numero).json(err);
+    else {
+        res.status(400).json(
+            {
+                numero: 400,
+                msg: "Erro: Os parametros de cliente estao invalidos"
+            }
+        );
     }
 
 }
 
-function deletar(req,res) {
+async function deletar(req,res) {
     const id = req.params.id;
-    try{
-        const clienteDeletado = cadastroClientes.deletar(id);
+
+    const clienteDeletado = 
+        await repositoryClientes.deletar(id);
+    if(clienteDeletado){
         res.json(clienteDeletado);
     }
-    catch (err) {
-        res.status(err.numero).json(err);
+    else {
+        res.status(404).json(
+            {
+                numero: 404,
+                msg: "Erro: Cliente nao encontrado."
+            }
+        );
     }
 }
 

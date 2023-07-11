@@ -1,53 +1,85 @@
 const cadastroAutor = require('../cadastro_autor');
+const repositoryAutor = require('../repository/autor_repository.js');
 
-function listar(req, res) {
-    const listaAutor = cadastroAutor.listar();
+async function listar(req, res) {
+    const listaAutor = await repositoryAutor.listar();//cadastroAutor.listar();
     res.json(listaAutor);
 }
 
-function buscarPorId(req,res) {
+async function buscarPorId(req,res) {
     const id = req.params.id;
-    try{
-        const autor = cadastroAutor.buscarPorId(id);
+    const autor = await repositoryAutor.buscarPorId(id);
+    if (autor){
         res.json(autor);
-    } catch (err) {
-        res.status(err.numero).json(err);
+    }
+    else {
+        res.status(404).json(
+            {
+                numero: 404,
+                msg: "Erro: Autor não encontrado."
+            }
+        );
     }
 }
 
-function inserir(req, res) {
+async function inserir(req, res) {
     const autor = req.body;
-
-    try{
-        const autorInserido = cadastroAutor.inserir(autor);
+    if(autor && autor.nome && autor.paisOrigem){
+        const autorInserido = await repositoryAutor.inserir(autor);
         res.status(201).json(autorInserido);
     }
-    catch (err) {
-        res.status(err.numero).json(err);
+    else {
+        res.status(400).json(
+            {
+                numero: 400,
+                msg: "Erro: Os parametros de produto estão invalidos."
+            }
+        );
     }
 }
 
-function atualizar(req,res) {
+async function atualizar(req,res) {
     const id = req.params.id;
     const autor = req.body;
-    try{
-        const autorAtualizado = cadastroAutor.atualizar(id,autor);
-        res.json(autorAtualizado);
-    }
-    catch (err) {
-        res.status(err.numero).json(err);
-    }
 
+    if(autor && autor.nome && autor.paisOrigem)
+    {
+        const autorAlterado = await repositoryAutor.atualizar(id, autor);
+        if(autorAlterado){
+            res.json(autorAlterado);
+        }
+        else {
+            res.status(404).json(
+                {
+                    numero: 404,
+                    msg: "Erro: autor não encontrado."
+                }
+            );
+        }
+    }
+    else {
+        res.status(400).json(
+            {
+                numero: 400,
+                msg: "Erro: Os parametros de autor estao invalidos."    
+            }
+        );
+    }
 }
 
-function deletar(req,res) {
+async function deletar(req,res) {
     const id = req.params.id;
-    try{
-        const autorDeletado = cadastroAutor.deletar(id);
+    const autorDeletado = await repositoryAutor.deletar(id);
+    if (autorDeletado){
         res.json(autorDeletado);
     }
-    catch (err) {
-        res.status(err.numero).json(err);
+    else {
+        res.status(404).json(
+            {
+                numero: 404,
+                msg: "Erro: autor não encontrado."
+            }
+        );
     }
 }
 

@@ -1,53 +1,84 @@
 const cadastroLivros = require('../cadastro_livros');
+const repositoryLivros = require('../repository/livro_repository');
 
-function listar(req, res) {
-    const listaLivros = cadastroLivros.listar();
+async function listar(req, res) {
+    const listaLivros = await repositoryLivros.listar();
     res.json(listaLivros);
 }
 
-function buscarPorId(req,res) {
+async function buscarPorId(req,res) {
     const id = req.params.id;
-    try{
-        const livro = cadastroLivros.buscarPorId(id);
+    const livro = await repositoryLivros.buscarPorId(id);
+    if(livro){
         res.json(livro);
-    } catch (err) {
-        res.status(err.numero).json(err);
+    }
+    else {
+        res.status(404).json(
+            {
+                numero: 404,
+                msg: "Erro: livro não encontrado."
+            }
+        );
     }
 }
 
-function inserir(req, res) {
+async function inserir(req, res) {
     const livro = req.body;
-
-    try{
-        const livroInserido = cadastroLivros.inserir(livro);
+    if(livro && livro.nome && livro.isbn && livro.idAutor && livro.editora && livro.anoPublicacao){
+        const livroInserido = await repositoryLivros.inserir(livro);
         res.status(201).json(livroInserido);
     }
-    catch (err) {
-        res.status(err.numero).json(err);
+    else {
+        res.status(400).json(
+            {
+                numero: 400,
+                msg: "Erro: Os parametros de livro estao invalidos"
+            }
+        );
     }
 }
 
-function atualizar(req,res) {
+async function atualizar(req,res) {
     const id = req.params.id;
     const livro = req.body;
-    try{
-        const livroAtualizado = cadastroLivros.atualizar(id,livro);
-        res.json(livroAtualizado);
-    }
-    catch (err) {
-        res.status(err.numero).json(err);
-    }
 
+    if(livro && livro.nome && livro.isbn && livro.idAutor && livro.editora && livro.anoPublicacao){
+        const livroAlterado = await repositoryLivros.atualizar(id, livro);
+        if(livroAlterado){
+            res.json(livroAlterado);
+        }
+        else {
+            res.status(404).json(
+                {
+                    numero: 404,
+                    msg: "Erro: Livro não encontrado."
+                }
+            );
+        }
+    }
+    else {
+        res.status(400).json(
+            {
+                numero: 400,
+                msg: "Erro: Os parametros de livro estão invalidos."
+            }
+        );
+    }
 }
 
-function deletar(req,res) {
+async function deletar(req,res) {
     const id = req.params.id;
-    try{
-        const livroDeletado = cadastroLivros.deletar(id);
+    const livroDeletado = await repositoryLivros.deletar(id);
+    if(livroDeletado){
         res.json(livroDeletado);
     }
-    catch (err) {
-        res.status(err.numero).json(err);
+    else {
+        res.status(404).json(
+            {
+                numero: 404,
+                msg: "Erro: Livro não encontrado."
+            }
+        )
     }
 }
 
